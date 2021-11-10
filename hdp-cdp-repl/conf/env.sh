@@ -49,4 +49,4 @@ export TKN_BASE_PATH=""
 #Set Distcp & Java Options like disable checksum, update/overwrite mode, map memory & etc.,
 
 export DISTCP_OPTS="-pbugpt -skipcrccheck -direct -async"
-export DISTCP_JAVA_OPTS="-D mapreduce.map.memory.mb=2048 -D mapreduce.map.java.opts=-Xmx1536m"
+export DISTCP_JAVA_OPTS="-Dmapreduce.map.memory.mb=2048 -Dmapreduce.map.java.opts=-Xmx1536m"
