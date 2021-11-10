@@ -18,7 +18,7 @@ usage()
  echo
  echo "options:"
  echo "--setup			Configures environment"
- echo "--deploy-conf"           Deploys wrapper env configuration
+ echo "--deploy-conf            Deploys wrapper env configuration"
  echo "--install-hms            Installs hms-mirror"
  echo "--cfg-hms                Interactively configures hms-mirror"
  echo "--run-hms                Triggers hms-mirror"
