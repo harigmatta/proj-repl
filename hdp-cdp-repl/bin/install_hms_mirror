@@ -1,0 +1,36 @@
+#!/usr/bin/env sh
+
+log_dt()
+{
+  date +"%Y-%m-%d-%T.%S"
+}
+
+install_hms()
+{
+  dt=$1
+  log_dir=$2
+  lib_dir=$3
+  bin_dir=$4
+  
+  if [[ ! -f ${lib_dir}/hms-mirror-dist.tar.gz ]]; then
+    echo "$(log_dt) hms installer missing, aborting..." 2>&1 | tee -a $log_dir/hms-mirror-install.log.$dt
+    exit 1;
+  fi
+  echo "$(log_dt) extracting hms-mirror-dist" 2>&1 | tee -a $log_dir/hms-mirror-install.log.$dt
+  tar xf ${lib_dir}/hms-mirror-dist.tar.gz -C $bin_dir 2>&1 | tee -a $log_dir/hms-mirror-install.log.$dt
+
+  [[ $? -ne 0 ]] && exit 1;
+
+  echo "$(log_dt) Installing hms-mirror" 2>&1 | tee -a $log_dir/hms-mirror-install.log.$dt
+
+  $bin_dir/hms-mirror-install/setup.sh >>  $log_dir/hms-mirror-install.log.$dt 2>&1
+
+  if [[ $? -eq 0 ]]; then
+     echo "$(log_dt) hms-mirror installation compeleted" 2>&1 | tee -a $log_dir/hms-mirror-install.log.$dt
+  else
+   echo "$(log_dt) Installing hms-mirror failed" 2>&1 | tee -a $log_dir/hms-mirror-install.log.$dt
+   exit 1;
+  fi
+}
+
+install_hms "$@"

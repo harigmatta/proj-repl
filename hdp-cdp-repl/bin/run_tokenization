@@ -1,0 +1,63 @@
+#!/bin/bash
+
+
+tokenize()
+{
+  TBL_NAME=$1
+  JDBC_URI=$2
+  APP_NAME="TKN_${DB_NAME}_${TBL_NAME}_$dt"
+
+  if [[ ${TKN_KERB_PRINC}KP == "TKP" || ${TKN_KEYTAB}KT == "TKT" ]];then
+   echo "Error: Kerberos principal or keytab is not set in env config for tokenization..Please check" 2>&1 | tee -a $log_dir/tokenization_${TBL_NAME}.log.$dt
+   exit;
+  fi
+
+  # TODO - Call tokenization utility
+ 
+ .${SDM_TKN_UTIL} ${TKN_KEYTAB} ${TKN_KERB_PRINC} ${source} ${country} ${TKN_BASE_PATH} \
+  ${method} ${lookupdb} ${lookuptable} ${cacheflag} ${TBL_NAME} ${startdt} ${enddt} 2>&1 | tee -a $log_dir/tokenization_${TBL_NAME}.log.$dt
+  
+}
+
+
+prepare()
+{
+ 
+ JDBC_URI=${SRC_HIVE_JDBC}
+ 
+ if [[ ${TBL_PATTERN} != "" ]];then
+  FETCH_TBL_STMT="show tables in ${DB_NAME} like '${TBL_PATTERN}'"
+ else
+  FETCH_TBL_STMT="show tables in ${DB_NAME}"
+ fi
+   
+
+ TBL_LIST=`beeline -u "${JDBC_URI}" --silent=true --outputformat=dsv --showHeader=false -e "${FETCH_TBL_STMT}"`
+ 
+ if [ $? -eq 0 ];then
+   for table in ${TBL_LIST}
+   do
+     echo "Initiating tokenization for table ${table}"
+     tokenize ${table}
+   done
+ else
+   echo "Error: Table list cannot be fetched for ${DB_NAME}" 2>&1 | tee -a $log_dir/tokenization_${DB_NAME}.log.$dt
+   exit 1;
+ fi
+}
+
+run()
+{
+  if [[ $TKN_FLAG == 'Y' ]]; then
+   echo "Token Flag is set to Y, Running tokenization for configured database and its table(s)"
+   create_obj
+  else
+   echo "Token Flag is not set to Y, Aborting...tokenization"
+   exit
+  fi
+}
+
+dt=$1
+log_dir=$2
+
+run "$@"

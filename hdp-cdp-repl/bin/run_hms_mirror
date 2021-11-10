@@ -1,0 +1,35 @@
+#!/bin/bash
+
+run_hms()
+{
+  dt=$1
+  log_dir=$2
+
+  if [[ ${KERB_PRINC}KP == "KP" || ${KEYTAB}KT == "KT" ]];then
+   echo "Error: Kerberos principal or keytab is not set in env config..Please check" 2>&1 | tee -a $log_dir/hms-mirror.log.$dt
+   exit;
+  else
+   kinit -kt $KEYTAB $KERB_PRINC
+  fi
+  
+  if [[ -z ${DB_NAME} ]];then
+   echo "Error: DB name cannot be empty" 2>&1 | tee -a $log_dir/hms-mirror.log.$dt
+   exit;
+  fi
+  
+  if [[ ${TBL_PATTERN} == "" ]]
+  then
+      HMS_CMD="hms-mirror $CLASS_PATH_FLAG"
+  else
+     HMS_CMD="hms-mirror --tf ${TBL_PATTERN} $CLASS_PATH_FLAG"
+  fi
+  
+  if [[ ${RUN_MODE} == "e" ]]; then
+     $HMS_CMD -e -db $DB_NAME 2>&1 | tee -a $log_dir/hms-mirror.log.$dt
+  else
+    $HMS_CMD -db $DB_NAME 2>&1 | tee -a $log_dir/hms-mirror.log.$dt
+  fi
+}
+
+[[ $EUID != 0 ]] && export PATH="$PATH:$HOME/bin" 
+run_hms "$@"

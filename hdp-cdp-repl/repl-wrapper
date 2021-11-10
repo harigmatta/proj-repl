@@ -1,0 +1,109 @@
+#!/usr/bin/env sh
+
+#Globals
+BASE_DIR=$(dirname "$(realpath $0)")
+INSTALL_DIR="$BASE_DIR/CDP-REPL"
+LOG_DIR="$INSTALL_DIR/logs"
+LIB_DIR="$INSTALL_DIR/lib"
+BIN_DIR="$INSTALL_DIR/bin"
+dt=$(date +"%Y-%m-%d.%H")
+
+#Help
+usage()
+{
+ echo "***************************************************************************************"
+ echo "Command: repl-wrapper (options) args"
+ echo "***************************************************************************************"
+ echo "-h                       Help"
+ echo
+ echo "options:"
+ echo "--setup			Configures environment"
+ echo "--deploy-conf"           Deploys wrapper env configuration
+ echo "--install-hms            Installs hms-mirror"
+ echo "--cfg-hms                Interactively configures hms-mirror"
+ echo "--run-hms                Triggers hms-mirror"
+ echo "--run-tokenization       Performs tokenization"
+ echo "--run-disctp             Performs distcp"
+ echo "--reconcile		Performs data reconcilation"
+ echo
+ echo "***************************************************************************************"
+}
+
+setup()
+{
+   echo "Wrapper:Setting up environment"
+    
+   # Cleanup previous installation
+   [[ -d $INSTALL_DIR/lib ]] && rm -r $INSTALL_DIR/lib/*
+   [[ -d $INSTALL_DIR/bin ]] && rm -r $INSTALL_DIR/bin/*
+   #[[ -d $INSTALL_DIR/conf ]] && rm -r $INSTALL_DIR/conf/*
+    
+   mkdir -p $INSTALL_DIR/lib
+   mkdir -p $INSTALL_DIR/bin
+   mkdir -p $INSTALL_DIR/conf
+   mkdir -p $INSTALL_DIR/logs
+ 
+   cp -r ${BASE_DIR}/lib/*  $INSTALL_DIR/lib
+   cp -r ${BASE_DIR}/conf/* $INSTALL_DIR/conf
+   cp -r ${BASE_DIR}/bin/*  $INSTALL_DIR/bin
+  
+}
+
+redeploy_conf()
+{
+  if [[ -f ${BASE_DIR}/conf/env.sh ]];then
+   cp ${BASE_DIR}/conf/env.sh $INSTALL_DIR/conf/
+   
+  else
+   echo "Error: Config file not found:${BASE_DIR}/conf/env.sh"
+  fi
+}
+#setting up environment
+
+[[ -f $INSTALL_DIR/conf/env.sh ]] && . $INSTALL_DIR/conf/env.sh  
+
+main()
+{
+  [[ $#  == 0 ]] && usage
+  
+  while [[ $# -gt 0 ]]; do
+   case "$1" in
+   --setup)
+     setup
+     shift;;
+   --deploy-conf)
+     redeploy_conf 
+     shift;;
+   --install-hms)
+     ${INSTALL_DIR}/bin/install_hms_mirror $dt $LOG_DIR $LIB_DIR $BIN_DIR
+     shift;;
+   --cfg-hms)
+     ${INSTALL_DIR}/bin/configure_hms_mirror $dt $LOG_DIR
+     shift;;
+   --run-hms)
+     ${INSTALL_DIR}/bin/run_hms_mirror $dt $LOG_DIR
+     shift;;
+   --run-tokenization)
+     ${INSTALL_DIR}/bin/run_tokenization $dt $LOG_DIR
+     shift;;
+   --run-distcp)
+     ${INSTALL_DIR}/bin/run_distcp $LOG_DIR
+     shift;;
+   --reconcile)
+     ${INSTALL_DIR}/bin/reconcile
+     shift;;
+   -h)
+     usage
+     shift;;
+   --*)
+     echo "ERROR: Invalid argument: $1"
+     usage
+     exit;;
+   *)
+    usage
+    exit;;
+  esac
+ done
+}
+
+main "$@"

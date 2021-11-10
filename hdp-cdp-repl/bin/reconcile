@@ -1,0 +1,39 @@
+#! /bin/bash
+src_table_cnt()
+{
+ TBL_NAME=$1
+ src_count=`beeline -u "${JDBC_URI}" --silent=true --outputformat=dsv --showHeader=false -e "select count(1) from ${DB_NAME}.${TBL_NAME}"`
+ echo $src_count > /dev/null
+}
+
+tgt_table_cnt()
+{
+ TBL_NAME=$1
+ tgt_count=`beeline -u "${JDBC_URI}" --silent=true --outputformat=dsv --showHeader=false -e "select count(1) from ${DB_NAME}.${TBL_NAME}"`
+ echo $tgt_count > /dev/null
+}
+
+run()
+{
+  SRC_JDBC_URI=`grep "LEFT:" -A5 $HOME/.hms-mirror/cfg/default.yaml | grep "uri" | sed 's/uri://g'| sed 's/ //g'`
+  TGT_JDBC_URI=`grep "RIGHT:" -A5 $HOME/.hms-mirror/cfg/default.yaml | grep "uri" | sed 's/uri://g'| sed 's/ //g'`
+  
+  if [[ ${TBL_PATTERN} != "" ]];then
+   FETCH_TBL_STMT="show tables in ${DB_NAME} like '${TBL_PATTERN}'"
+  else
+   FETCH_TBL_STMT="show tables in ${DB_NAME}"
+  fi
+  
+  #Get table list
+  TBL_LIST=`beeline -u "${JDBC_URI}" --silent=true --outputformat=dsv --showHeader=false -e "${FETCH_TBL_STMT}"`
+  
+  for table in ${TBL_LIST}
+  do
+    src_tbl_cnt=src_table_cnt ${SRC_JDBC_URI} ${table}
+    tgt_tbl_cnt=tgt_table_cnt ${TGT_JDBC_URI} ${table}
+    echo $src_tbl_cnt
+    echo $tgt_tbl_cnt
+  done
+}
+
+run

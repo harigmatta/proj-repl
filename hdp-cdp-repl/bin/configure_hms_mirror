@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+
+configure_hms()
+{
+ dt=$1
+ log_dir=$2
+ hms-mirror --setup 2>&1 | tee -a $log_dir/hms-mirror-setup.log.$dt
+}
+
+[[ $EUID != 0 ]] && export PATH="$PATH:$HOME/bin"
+configure_hms "$@"
