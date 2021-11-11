@@ -30,7 +30,7 @@ export CLASS_PATH_FLAG="--hadoop-claspath"
 #Default run mode for hms-mirror is dry run, where tables are not replicated to target cluster.If mode is set to 'e' then table replication is executed.
 export RUN_MODE="e"
 
-#Report Dir for Hm-mirror. If not specified report is written to default report directory.Note: This directoy play an import role, where tables found part of this hms mirror directory are considered for data replication/distcp to target cluster.
+#Default Report Dir of Hm-mirror. Note: This directoy play an import role, where tables found part of this hms mirror directory are considered for data replication/distcp to target cluster.
 
 export HMS_REPORT_DIR=""
 

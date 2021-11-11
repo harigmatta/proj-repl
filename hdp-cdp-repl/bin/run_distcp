@@ -12,7 +12,7 @@ run_dist_copy()
  
 
  if [[ ${TKN_FLAG} == 'Y' ]]; then
-  source_dir_tkn=${BASE_DIR}/${TABLE}'
+  source_dir_tkn=${BASE_DIR}/${TABLE}
   echo "Running distcp for : ${TABLE}" 2>&1 | tee -a $log_dir/distcp_${TABLE}.log.$dt
   hadoop distcp  ${DISTCP_JAVA_OPTS} ${DISTCP_OPTS} $source_dir_tkn $target_dir 2>&1 | tee -a $log_dir/distcp_${TABLE}.log.$dt
  else
